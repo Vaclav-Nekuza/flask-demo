@@ -1,0 +1,44 @@
+version: '3'
+services:
+  demo:
+    build:
+      context: ../flask-demo
+      dockerfile: Dockerfile
+    container_name: demo
+    restart: always
+    ports:
+    - "5000:5000"
+    networks:
+      - demo_net
+    links:
+      - postgres
+      - syslog
+    volumes:
+    - ../etc/demo:/etc/demo
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=demo_user
+      - POSTGRES_PASSWORD=demo_pass
+    ports:
+      - 5432:5432
+    networks:
+      - demo_net
+    volumes:
+    - ../db_demo:/var/lib/postgresql/data
+
+  syslog:
+    image: vimagick/rsyslog
+    ports:
+      - "514:514/tcp"
+      - "514:514/udp"
+    networks:
+      - demo_net
+    volumes:
+      - ../logs:/var/logs
+    restart: always
+
+networks:
+  demo_net: null

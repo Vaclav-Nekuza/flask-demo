@@ -1,0 +1,10 @@
+arrow==0.*
+Flask==1.*
+flask-restx==0.*
+psycopg2==2.8.5
+certifi>=2020
+requests==2.*
+SQLAlchemy==1.1.15
+SQLAlchemy-Utils==0.*
+uWSGI==2.*
+Werkzeug>=1
