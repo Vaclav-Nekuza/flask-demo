@@ -108,8 +108,7 @@ class DB:
             'country': country
         }
         result = self._insert(self.addr_ins, params)
-        print(f"{result}---------------------------------------------------------")
-        self.logger.warning(f"{result}-------------------")
+        self.logger.warning(f"response of insert address {result}")
         return self.get_success_response(result)
 
     def select_person(self, pers_id: int = None, email: str = None, first_name: str = None, surname: str = None) -> \

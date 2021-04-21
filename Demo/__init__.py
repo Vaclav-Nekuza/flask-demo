@@ -32,7 +32,7 @@ class Demo(Flask):
         # setup from default config file
         self.config.from_pyfile('../config.py')
         # setup from local config file, rewriting default setup
-        self.config.from_pyfile('/etc/godot/config.py', silent=True)
+        self.config.from_pyfile('/etc/demo/config.py', silent=True)
 
         # logger setup
         log.set_logger(self)
