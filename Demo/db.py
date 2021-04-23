@@ -73,29 +73,27 @@ class DB:
             SelectError(statement, params, err).abort()
 
     def insert_person(self, first_name, surname, address, email, date_of_birth):
-        # unfinished
         self.logger.info(f"Inserting new person")
-        addr = self.select_address(street=address['street'], street_number=address['street_number'],
-                                   post_code=address['post_code'], city=address['city'],
-                                   country=address['country'])
-        if addr['err_code'] == 1:
-            ins_resp = self.insert_address(street=address['street'], street_number=address['street_number'],
-                                           post_code=address['post_code'], city=address['city'],
-                                           country=address['country'])
-            addr_id = ins_resp['id']
-        else:
-            addr_id = addr['data']['id']
-
+        params = {'street': address['street'], 'street_number': address['street_number'],
+                  'post_code': address['post_code'], 'city': address['city'], 'country': address['country']}
+        addr = self.select_address(**params)
+        if addr['data'] == {}:
+            ins_resp = self.insert_address(**params)
+            if ins_resp['err_code'] == 0:
+                addr = self.select_address(**params)
+            else:
+                InsertError(self.addr_ins, params).abort()
+        addr_id = addr['data']['id']
         params = {
             'created': arrow.now(),
             'first_name': first_name,
             'surname': surname,
             'address_id': addr_id,
             'email': email,
-            'date_of_birth': date_of_birth
+            'date_of_birth': arrow.get(date_of_birth)
         }
-        resp = self._insert(self.per_ins, params)
-        return self.get_success_response(resp)
+        self._insert(self.per_ins, params)
+        return self.get_success_response("Successfully inserted new person")
 
     def insert_address(self, street: str, street_number: int, post_code: int, city: str, country: str) \
             -> Dict[str, Union[int, str]]:
@@ -107,9 +105,8 @@ class DB:
             'city': city,
             'country': country
         }
-        result = self._insert(self.addr_ins, params)
-        self.logger.warning(f"response of insert address {result}")
-        return self.get_success_response(result)
+        self._insert(self.addr_ins, params)
+        return self.get_success_response("Successfully inserted new address")
 
     def select_person(self, pers_id: int = None, email: str = None, first_name: str = None, surname: str = None) -> \
             Dict[str, Union[int, str, List[Dict[str, Union[int, str, Dict[str, Union[int, str]]]]]]]:
@@ -145,7 +142,7 @@ class DB:
                     'country': address['country']
                 },
                 'email': person['email'],
-                'date_of_birth': person['date_of_birth']
+                'date_of_birth': str(person['date_of_birth'])
             }
             resp.append(resp_person)
         return self.get_success_response(resp)
@@ -160,7 +157,7 @@ class DB:
         result = {}
         if addr_id is not None:
             self.logger.info(f"Selecting address using id: {addr_id}")
-            resp = self._select(self.get_per_addr_sel_stmt, {'id': addr_id})
+            resp = self._select(self.get_addr_sel_stmt, {'id': addr_id})
         elif street is not None and street_number is not None and post_code is not None and city is not None and \
                 country is not None:
             self.logger.info(f"Selecting address using full address: {street}, {street_number}, {post_code}, " +
@@ -196,16 +193,17 @@ class DB:
             stmt = self.get_addr_full_sel_stmt
         result = self._select(stmt, params)
         for row in result:
-            if table == self.person_table.name:
+            if table == self.person_table:
                 if not (row[2] == params["first_name"] and row[3] == params["surname"] and
                         row[4] == params["address_id"] and row[6] == params["date_of_birth"]):
                     Inconsistency(row, params, table, err).abort()
-            elif table == self.address_table.name:
+            elif table == self.address_table:
                 if not (row[1] == params["street"] and row[2] == params["street_number"] and
                         row[3] == params["post_code"] and row[4] == params["city"] and row[5] == params["country"]):
                     Inconsistency(row, params, table, err).abort()
             else:
                 TableNotDefined(table).abort()
+        self.logger.info(f"identical duplicate data found it is being ignored")
         return None
 
     @staticmethod
@@ -232,7 +230,7 @@ class DB:
                      Column('surname', String, nullable=False),
                      Column('address_id', Integer, ForeignKey(self.address_table.columns.id), nullable=False),
                      Column('email', String, primary_key=True, unique=True),
-                     Column('date_of_birth', ArrowType, unique=True),
+                     Column('date_of_birth', ArrowType),
                      schema=self.schema_name)
 
     def crt_address_table(self) -> Table:

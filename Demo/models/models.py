@@ -1,4 +1,7 @@
 from flask_restx import fields, Namespace
+import arrow
+
+now_date = str(arrow.now()).split("T")[0]
 
 ns_demo = Namespace(name='demo',
                     description='demo api',
@@ -33,7 +36,7 @@ model_person = {
     "surname": fields.String(description="surname", required=True),
     "address": fields.Nested(mdl_address),
     "email": fields.String(description="email", required=True),
-    "date_of_birth": fields.DateTime(description="date of birth", required=True),
+    "date_of_birth": fields.String(description="date of birth", required=True, example=now_date),
 }
 
 mdl_person = ns_demo.model('mdl_person', model_person)
