@@ -44,7 +44,7 @@ mdl_person = ns_demo.model('mdl_person', model_person)
 mdl_return_person = mdl_person.inherit(
     'mdl_return_person', {
         'id': fields.Integer(description='id of the record', required=True),
-        'created': fields.DateTime(description='time the person was created', required=True),
+        'created': fields.String(description='time the person was created', required=True),
     }
 )
 

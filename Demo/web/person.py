@@ -9,10 +9,10 @@ class ManagePeople(Resource):
     @ns_demo.response(200, 'Success')
     @ns_demo.response(400, 'Bad Request')
     @ns_demo.marshal_with(mdl_resp_person)
-    @ns_demo.param('id', 'id of a person')
-    @ns_demo.param('first_name', 'first_name')
-    @ns_demo.param('surname', 'surname')
     @ns_demo.param('email', 'email')
+    @ns_demo.param('surname', 'surname')
+    @ns_demo.param('first_name', 'first_name')
+    @ns_demo.param('id', 'id of a person')
     def get(self):
         pers_id = request.args.get('id', None)
         first_name = request.args.get('first_name', None)
