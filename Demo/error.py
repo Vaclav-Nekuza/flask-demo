@@ -43,13 +43,13 @@ class EngineCreation(DemoExcept):
 
 class DBDoesNotExist(DemoExcept):
     def __init__(self, db_name, user, e=None):
-        inter_msg = f"Error while creating an engine. "
+        inter_msg = f"Error while creating database. "
         if e:
             inter_msg += str(e)
         if flask.has_app_context():
-            app.logger.error(f"EngineCreation exception internal message: {inter_msg}")
+            app.logger.error(f"DBDoesNotExist exception internal message: {inter_msg}")
         DemoExcept.__init__(self,
-                            user_msg="Internal Error while establishing connection to database",
+                            user_msg="Internal Error while establishing database",
                             inter_msg=inter_msg,
                             http_code=500,
                             err_code=1002)
@@ -105,7 +105,7 @@ class TableNotDefined(DemoExcept):
         DemoExcept.__init__(self,
                             user_msg="Table wasn't properly defined",
                             inter_msg=inter_msg,
-                            http_code=400,
+                            http_code=500,
                             err_code=1006)
 
 
